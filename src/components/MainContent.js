@@ -6,6 +6,7 @@ function MainContent({ className, children }) {
   const [cities, setCities] = useState([]);
   const [stringValue, setStringVal] = useState("");
   const [selectedCity, setSelectedCity] = useState(null);
+  const [isValid, setValidSatus] = useState(true);
 
   useEffect(() => {
     getCityList(stringValue)
@@ -15,6 +16,10 @@ function MainContent({ className, children }) {
     const request = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${name}&language=ru`)
     const response = await request.json();
     setCities(response.results ? response.results : []);
+  }
+
+  const checkData = () => {
+    setValidSatus(stringValue.length > 2 ? true : false)
   }
 
   const cityList = <ul>
@@ -32,8 +37,8 @@ function MainContent({ className, children }) {
   return <div className={className}>
     <form>
       <label htmlFor="cityName"> Введите название города</label>
-      <div>
-        <input 
+      <div className={!isValid ? "error" : ""}>
+        <input
           id="cityName"
           list="cityList" 
           placeholder="Новокузнецк" 
@@ -41,7 +46,8 @@ function MainContent({ className, children }) {
           onChange={(e) => {
             setSelectedCity(null);
             setStringVal(e.target.value)
-          }} 
+          }}
+          onBlur={checkData} 
           style={{width: "100%", boxSizing: "border-box"}}
         />
 
@@ -59,11 +65,26 @@ const StyledMainContent = styled(MainContent)`
 
   form {
     div {
+      margin-top: 20px;
       position: relative; 
-      width: 200px;
+      width: 300px;
 
       input {
         padding: 4px;
+      }
+
+      &.error {
+        input {
+          border: red 1px solid;
+        }
+
+        &::before {
+            content: "Введите больше двух символов";
+            position: absolute;
+            display: block;
+            bottom: 100%;
+            color: red;
+          }
       }
     }
 
